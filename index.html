@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sistema de Optotipos Snellen</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="app-shell" id="appShell">
+      <aside class="control-panel" id="controlPanel" aria-label="Configuracoes do optotipo">
+        <div class="brand-block">
+          <p class="eyebrow">Tabela de Snellen</p>
+          <h1>Sistema de Optotipos</h1>
+        </div>
+
+        <section class="panel-section">
+          <h2>Distancia</h2>
+          <div class="segmented" role="group" aria-label="Distancia de teste">
+            <button class="segment is-active" type="button" data-distance="6">6 metros</button>
+            <button class="segment" type="button" data-distance="3">3 metros</button>
+          </div>
+        </section>
+
+        <section class="panel-section">
+          <h2>Optotipos</h2>
+          <label class="field">
+            <span>Conjunto</span>
+            <select id="chartType">
+              <option value="letters">Letras Sloan/Snellen</option>
+              <option value="symbols">Simbolos infantis</option>
+              <option value="tumblingE">E direcional</option>
+              <option value="landoltC">C de Landolt</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Sequencia</span>
+            <select id="sequenceMode">
+              <option value="balanced">Balanceada</option>
+              <option value="random">Aleatoria</option>
+              <option value="fixed">Classica</option>
+            </select>
+          </label>
+        </section>
+
+        <section class="panel-section">
+          <h2>Exibicao</h2>
+          <label class="range-field">
+            <span>Contraste</span>
+            <input id="contrast" type="range" min="45" max="100" value="100">
+            <output id="contrastValue">100%</output>
+          </label>
+          <label class="check-field">
+            <input id="showLabels" type="checkbox" checked>
+            <span>Mostrar acuidades</span>
+          </label>
+          <label class="check-field">
+            <input id="colorPanels" type="checkbox" checked>
+            <span>Paineis coloridos</span>
+          </label>
+          <label class="check-field">
+            <input id="singleLine" type="checkbox">
+            <span>Modo linha única</span>
+          </label>
+          <label class="field line-picker" hidden>
+            <span>Linha</span>
+            <select id="linePicker"></select>
+          </label>
+        </section>
+
+        <section class="panel-section">
+          <h2>Ferramentas</h2>
+          <div class="button-grid">
+            <button id="shuffle" class="tool-button" type="button">Embaralhar</button>
+            <button id="printChart" class="tool-button" type="button">Imprimir</button>
+          </div>
+          <button id="reset" class="tool-button full" type="button">Restaurar padrao</button>
+        </section>
+
+        <p class="note">
+          Uso auxiliar para triagem visual. Nao substitui exame oftalmologico, iluminacao adequada nem calibracao fisica do tamanho impresso.
+        </p>
+      </aside>
+
+      <section class="chart-workspace">
+        <header class="workspace-header">
+          <div>
+            <p class="eyebrow">Distancia selecionada</p>
+            <h2 id="distanceTitle">6 metros</h2>
+          </div>
+          <div class="header-actions">
+            <button id="toggleMenu" class="icon-button" type="button" aria-controls="controlPanel" aria-expanded="true" title="Minimizar menu">
+              <span aria-hidden="true">☰</span>
+              <span>Menu</span>
+            </button>
+            <button id="fullscreen" class="icon-button" type="button" title="Tela cheia">
+              <span aria-hidden="true">⛶</span>
+              <span>Tela cheia</span>
+            </button>
+            <div class="calibration-card">
+              <span>Calibracao</span>
+              <strong id="calibrationText">A linha 20/20 deve medir 8,73 mm</strong>
+            </div>
+          </div>
+        </header>
+
+        <div class="chart-paper" id="chartPaper">
+          <div class="chart-topline">
+            <span id="chartName">Optotipos Snellen</span>
+            <span id="chartDistance">Teste a 6 m</span>
+          </div>
+          <div id="chart" class="chart" aria-live="polite"></div>
+        </div>
+
+        <section class="reference-panel">
+          <div>
+            <h2>Tamanhos calculados</h2>
+            <p>Altura total do optotipo em milimetros para cada linha.</p>
+          </div>
+          <div id="sizeTable" class="size-table"></div>
+        </section>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
