@@ -1,20 +1,29 @@
 # Sistema de Optotipos Snellen
 
-Aplicacao local para gerar tabela de optotipos baseada em Snellen, com tamanhos calculados para testes a 3 metros e 6 metros.
+Aplicação local para apresentação de optótipos Snellen e ETDRS/logMAR, com cálculo angular e calibração física do monitor.
 
 ## Como usar
 
 Abra `index.html` no navegador.
 
-Recursos incluidos:
+Recursos incluídos:
 
-- distancia de teste em 3 m ou 6 m;
-- letras, simbolos infantis, E direcional e C de Landolt;
-- sequencia classica, balanceada ou aleatoria;
-- modo de linha unica;
-- controle de contraste;
-- impressao da tabela;
-- painel com tamanho em milimetros de cada linha.
+- distância de teste de 1 a 20 m, com atalhos para 3 e 6 m;
+- protocolos Snellen e ETDRS/logMAR;
+- letras, símbolos, E direcional e C de Landolt;
+- sequência balanceada ou aleatória e modo de linha única;
+- calibração por régua: converte a medida angular em pixels físicos da tela;
+- apresentação em tela cheia e navegação por teclado;
+- registro local de sessão e exportação CSV.
+
+## Calibração obrigatória
+
+1. Abra a aplicação no **monitor que será usado no exame**, em resolução e escala definitivas.
+2. Meça o comprimento total da barra preta de calibração com uma régua física.
+3. Informe a medida observada em milímetros e salve. Não use o valor em pixels ou a largura da tela.
+4. Confirme com uma régua que a altura mostrada para 20/20 corresponde ao valor informado pelo painel.
+
+A calibração é específica para navegador, monitor, resolução e escala do sistema operacional. Repita-a ao trocar qualquer um deles. Sem calibração, a aplicação mostra a tabela, mas não deve ser usada para medir acuidade. Valores exibidos como “mm teóricos” descrevem apenas o cálculo angular; passam a corresponder ao tamanho físico somente após a calibração.
 
 ## Calculo
 
@@ -31,6 +40,8 @@ Valores esperados para 20/20:
 - 3 m: aproximadamente 4,36 mm;
 - 6 m: aproximadamente 8,73 mm.
 
-## Observacao
+## Limites e validação
 
-Este sistema serve para apoio e triagem. Para uso clinico, calibre a impressao fisicamente com regua, controle iluminacao, contraste, distancia real e consulte um profissional habilitado.
+Este projeto implementa o cálculo geométrico e controles operacionais, mas não constitui, por si só, um dispositivo médico validado. Antes de uso profissional, a responsabilidade técnica deve definir e documentar: optótipos com desenho padronizado/validado, luminância e contraste do monitor, iluminação do ambiente, distância real, critério de pontuação, segurança dos dados e requisitos regulatórios aplicáveis.
+
+Os resultados são guardados no armazenamento local do navegador; exporte-os antes de limpar os dados do navegador e não utilize identificadores sensíveis sem um procedimento de proteção de dados adequado.

@@ -9,6 +9,7 @@
   --warn: #8b4e15;
   --paper: #fffdf8;
   --shadow: 0 20px 50px rgba(31, 45, 61, 0.12);
+  --optotype-font: "Optician Sans", "Optician Sans Bold", Arial, Helvetica, sans-serif;
 }
 
 * {
@@ -129,17 +130,55 @@ input {
 }
 
 .field select,
+.field input,
 .range-field input {
   width: 100%;
 }
 
-.field select {
+.field select,
+.field input {
   min-height: 42px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: #fff;
   color: var(--ink);
   padding: 0 12px;
+}
+
+.subheading {
+  margin: 20px 0 12px !important;
+}
+
+.help-text,
+.status-message {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.status-message {
+  min-height: 18px;
+  margin-top: 10px;
+}
+
+.calibration-ruler {
+  display: flex;
+  align-items: center;
+  height: 28px;
+  margin: 14px 0 4px;
+  overflow: visible;
+  background: repeating-linear-gradient(90deg, #f2f5f7 0 9px, #fff 9px 10px);
+  border: 1px solid var(--line);
+}
+
+.calibration-ruler span {
+  display: block;
+  max-width: 100%;
+  flex: 0 1 320px;
+  height: 10px;
+  background: #111;
+  border-radius: 2px;
 }
 
 .range-field {
@@ -239,6 +278,14 @@ input {
   border-radius: 8px;
   background: var(--panel);
   padding: 14px 16px;
+}
+
+.calibration-card:not(.is-calibrated) {
+  border-color: #bc7a1f;
+}
+
+.calibration-card:not(.is-calibrated) strong {
+  color: var(--warn);
 }
 
 .calibration-card span {
@@ -342,6 +389,66 @@ input {
 .chart-workspace.presentation-mode .color-panel.is-presentation-slide {
   display: grid;
   min-height: 100vh;
+}
+
+/* A apresentação usa uma camada independente da tabela normal. Isso evita que
+   regras de ocultação das linhas deixem a tela vazia durante a transição para fullscreen. */
+.presentation-stage {
+  display: none;
+}
+
+.chart-workspace.presentation-mode {
+  overflow: hidden;
+}
+
+.chart-workspace.presentation-mode .workspace-header,
+.chart-workspace.presentation-mode .chart-paper,
+.chart-workspace.presentation-mode .reference-panel {
+  display: none !important;
+}
+
+.chart-workspace.presentation-mode .presentation-stage {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex !important;
+  width: 100vw;
+  height: 100vh;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #fff;
+  cursor: pointer;
+}
+
+.presentation-slide,
+.presentation-optotypes {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.presentation-slide {
+  width: 100%;
+  height: 100%;
+  color: color-mix(in srgb, #000 var(--contrast), #fff);
+}
+
+.presentation-optotypes {
+  gap: var(--gap-px);
+  min-height: calc(var(--size-px) * 1.22);
+}
+
+.presentation-optotype {
+  display: inline-grid;
+  width: var(--size-px);
+  height: var(--size-px);
+  place-items: center;
+  color: inherit;
+  font-family: var(--optotype-font);
+  font-size: var(--glyph-size-px, var(--size-px));
+  font-weight: 800;
+  line-height: 1;
 }
 
 .chart-workspace.local-fullscreen {
@@ -519,20 +626,20 @@ input {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--gap);
-  min-height: calc(var(--size) * 1.22);
+  gap: var(--gap-px);
+  min-height: calc(var(--size-px) * 1.22);
   overflow: hidden;
 }
 
 .optotype {
   display: inline-grid;
   place-items: center;
-  width: var(--size);
-  height: var(--size);
-  font-size: var(--size);
+  width: var(--size-px);
+  height: var(--size-px);
+  font-size: var(--glyph-size-px, var(--size-px));
   font-weight: 800;
   line-height: 1;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--optotype-font);
 }
 
 .symbol-optotype {
@@ -678,5 +785,16 @@ input {
     box-shadow: none;
     padding: 12mm;
     background: #fff;
+  }
+
+  .optotypes {
+    gap: var(--gap-mm);
+    min-height: calc(var(--size-mm) * 1.22);
+  }
+
+  .optotype {
+    width: var(--size-mm);
+    height: var(--size-mm);
+    font-size: var(--size-mm);
   }
 }

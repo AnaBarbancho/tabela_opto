@@ -15,11 +15,23 @@
         </div>
 
         <section class="panel-section">
-          <h2>Distancia</h2>
+          <h2>Protocolo</h2>
+          <label class="field">
+            <span>Tabela</span>
+            <select id="protocol">
+              <option value="snellen">Snellen</option>
+              <option value="etdrs">ETDRS / logMAR</option>
+            </select>
+          </label>
+          <h2 class="subheading">Distância</h2>
           <div class="segmented" role="group" aria-label="Distancia de teste">
             <button class="segment is-active" type="button" data-distance="6">6 metros</button>
             <button class="segment" type="button" data-distance="3">3 metros</button>
           </div>
+          <label class="field">
+            <span>Distância exata (m)</span>
+            <input id="customDistance" type="number" min="1" max="20" step="0.01" value="6">
+          </label>
         </section>
 
         <section class="panel-section">
@@ -36,11 +48,26 @@
           <label class="field">
             <span>Sequencia</span>
             <select id="sequenceMode">
+              <option value="fixed">Fixa (protocolo)</option>
               <option value="balanced">Balanceada</option>
               <option value="random">Aleatoria</option>
-              <option value="fixed">Classica</option>
             </select>
           </label>
+        </section>
+
+        <section class="panel-section">
+          <h2>Calibração do monitor</h2>
+          <p class="help-text">Meça toda a barra preta visível abaixo com uma régua e informe o valor real. Ela não tem uma medida-padrão: use exatamente o que a régua mostrar. A calibração fica salva somente neste navegador.</p>
+          <div class="calibration-ruler" aria-label="Barra para calibração"><span id="calibrationBar"></span></div>
+          <label class="field">
+            <span>Comprimento total da barra preta (mm)</span>
+            <input id="measuredBarMm" type="number" min="10" max="300" step="0.1" placeholder="Ex.: 74">
+          </label>
+          <div class="button-grid">
+            <button id="saveCalibration" class="tool-button" type="button">Salvar calibração</button>
+            <button id="clearCalibration" class="tool-button" type="button">Limpar</button>
+          </div>
+          <p id="calibrationStatus" class="status-message" role="status"></p>
         </section>
 
         <section class="panel-section">
@@ -53,10 +80,6 @@
           <label class="check-field">
             <input id="showLabels" type="checkbox" checked>
             <span>Mostrar acuidades</span>
-          </label>
-          <label class="check-field">
-            <input id="colorPanels" type="checkbox" checked>
-            <span>Paineis coloridos</span>
           </label>
           <label class="check-field">
             <input id="singleLine" type="checkbox">
@@ -77,9 +100,18 @@
           <button id="reset" class="tool-button full" type="button">Restaurar padrao</button>
         </section>
 
-        <p class="note">
-          Uso auxiliar para triagem visual. Nao substitui exame oftalmologico, iluminacao adequada nem calibracao fisica do tamanho impresso.
-        </p>
+        <section class="panel-section">
+          <h2>Sessão de exame</h2>
+          <label class="field"><span>Identificador do paciente</span><input id="patientId" maxlength="40" placeholder="Código ou iniciais"></label>
+          <label class="field"><span>Olho</span><select id="eye"><option value="OD">OD</option><option value="OE">OE</option><option value="AO">AO</option></select></label>
+          <label class="field"><span>Correção</span><select id="correction"><option>Sem correção</option><option>Com correção</option><option>Estenopeico</option></select></label>
+          <label class="field"><span>Resultado</span><select id="resultLine"></select></label>
+          <label class="field"><span>Erros na linha</span><input id="errors" type="number" min="0" max="20" value="0"></label>
+          <div class="button-grid"><button id="saveResult" class="tool-button" type="button">Registrar</button><button id="exportResults" class="tool-button" type="button">Exportar CSV</button></div>
+          <p id="sessionStatus" class="status-message" role="status"></p>
+        </section>
+
+        <p class="note">A calibração confirma somente o tamanho físico nesta tela. Antes de uso assistencial, valide optótipos, luminância, contraste, protocolo e registro conforme a sua responsabilidade técnica e normas aplicáveis.</p>
       </aside>
 
       <section class="chart-workspace">
@@ -97,9 +129,9 @@
               <span aria-hidden="true">⛶</span>
               <span>Tela cheia</span>
             </button>
-            <div class="calibration-card">
-              <span>Calibracao</span>
-              <strong id="calibrationText">A linha 20/20 deve medir 8,73 mm</strong>
+            <div class="calibration-card" id="calibrationCard">
+              <span>Calibração física</span>
+              <strong id="calibrationText">Calibração pendente</strong>
             </div>
           </div>
         </header>
@@ -111,6 +143,8 @@
           </div>
           <div id="chart" class="chart" aria-live="polite"></div>
         </div>
+
+        <section id="presentationStage" class="presentation-stage" aria-live="polite" aria-label="Apresentação do optótipo"></section>
 
         <section class="reference-panel">
           <div>
