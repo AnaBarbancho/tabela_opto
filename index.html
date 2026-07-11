@@ -67,6 +67,11 @@
             <button id="saveCalibration" class="tool-button" type="button">Salvar calibração</button>
             <button id="clearCalibration" class="tool-button" type="button">Limpar</button>
           </div>
+          <label class="field">
+            <span>Altura preta medida da letra 20/200 (mm)</span>
+            <input id="measuredOptotypeMm" type="number" min="10" max="300" step="0.1" placeholder="Meça a altura visível">
+          </label>
+          <button id="saveOptotypeCalibration" class="tool-button full" type="button">Corrigir tamanho da fonte</button>
           <p id="calibrationStatus" class="status-message" role="status"></p>
         </section>
 
