@@ -430,33 +430,22 @@ input {
   cursor: pointer;
 }
 
-.presentation-slide,
-.presentation-optotypes {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.presentation-slide.intro-slide .presentation-optotypes {
-  width: 100%;
-  height: 100%;
-  align-items: center;
-  justify-content: center;
-}
-
-.presentation-slide.intro-slide .presentation-optotype {
-  transform: translateY(-50%);
-}
-
 .presentation-slide {
+  display: grid;
+  place-items: center;
   width: 100%;
   height: 100%;
   color: color-mix(in srgb, #000 var(--contrast), #fff);
 }
 
 .presentation-optotypes {
+  display: flex;
+  width: max-content;
+  max-width: 100vw;
+  min-height: var(--size-px);
+  align-items: center;
+  justify-content: center;
   gap: var(--gap-px);
-  min-height: calc(var(--size-px) * 1.22);
 }
 
 .presentation-optotype {
@@ -468,7 +457,11 @@ input {
   font-family: var(--optotype-font);
   font-size: var(--glyph-size-px, var(--size-px));
   font-weight: var(--optotype-weight);
-  line-height: 1;
+  line-height: 0;
+}
+
+.presentation-optotype.directional-optotype {
+  transform: rotate(var(--optotype-rotation, 0deg));
 }
 
 .presentation-color-slide {
@@ -768,8 +761,54 @@ input {
   height: var(--size-px);
   font-size: var(--glyph-size-px, var(--size-px));
   font-weight: var(--optotype-weight);
-  line-height: 1;
+  line-height: 0;
   font-family: var(--optotype-font);
+}
+
+.directional-optotype {
+  flex: 0 0 var(--size-px);
+  overflow: visible;
+  transform: rotate(var(--optotype-rotation, 0deg));
+  transform-origin: center center;
+  text-align: center;
+}
+
+.tumbling-e-optotype {
+  position: relative;
+  color: inherit;
+}
+
+.tumbling-e-part {
+  position: absolute;
+  display: block;
+  background: currentColor;
+}
+
+.tumbling-e-top,
+.tumbling-e-middle,
+.tumbling-e-bottom {
+  left: 0;
+  width: 100%;
+  height: 20%;
+}
+
+.tumbling-e-top {
+  top: 0;
+}
+
+.tumbling-e-middle {
+  top: 40%;
+}
+
+.tumbling-e-bottom {
+  bottom: 0;
+}
+
+.tumbling-e-stem {
+  left: 0;
+  top: 0;
+  width: 20%;
+  height: 100%;
 }
 
 .symbol-optotype {

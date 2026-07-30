@@ -29,7 +29,7 @@ const sets = {
   letters: ["C", "D", "H", "K", "N", "O", "R", "S", "V", "Z"],
   symbols: ["●", "■", "▲", "◆", "★", "✚", "⬟", "⬢"],
   tumblingE: ["E"],
-  landoltC: ["C"],
+  numbers: ["2", "3", "4", "5", "6", "7", "8", "9"],
 };
 
 const state = {
@@ -65,6 +65,36 @@ function buildSequence(row, rowIndex) {
   const random = mulberry32(state.seed + rowIndex * 97 + Math.round(row.denominator));
   const offset = state.sequenceMode === "balanced" ? rowIndex : Math.floor(random() * source.length);
   return Array.from({ length: row.count }, (_, index) => state.sequenceMode === "random" ? source[Math.floor(random() * source.length)] : source[(offset + index * 3) % source.length]);
+}
+
+function rotationForOptotype(rowIndex, index) {
+  return [0, 90, 180, 270][(rowIndex + index + state.seed) % 4];
+}
+
+function shouldDrawGeometricE(value) {
+  return state.chartType === "tumblingE" || (state.chartType === "letters" && value === "E");
+}
+
+function optotypeClassName(baseClass, value) {
+  const classNames = [baseClass];
+  if (state.chartType === "symbols") classNames.push("symbol-optotype");
+  if (shouldDrawGeometricE(value)) classNames.push("tumbling-e-optotype");
+  if (state.chartType === "tumblingE") classNames.push("directional-optotype");
+  return classNames.join(" ");
+}
+
+function fillOptotype(symbol, value) {
+  if (!shouldDrawGeometricE(value)) {
+    symbol.textContent = value;
+    return;
+  }
+  symbol.textContent = "";
+  symbol.setAttribute("aria-label", "E");
+  ["top", "middle", "bottom", "stem"].forEach((part) => {
+    const bar = document.createElement("span");
+    bar.className = `tumbling-e-part tumbling-e-${part}`;
+    symbol.appendChild(bar);
+  });
 }
 
 function isPresentationMode() { return state.fullscreenActive || Boolean(document.fullscreenElement) || elements.chartWorkspace.classList.contains("local-fullscreen"); }
@@ -141,10 +171,10 @@ function renderChart() {
     const optotypes = document.createElement("div"); optotypes.className = "optotypes";
     buildSequence(row, rowIndex).forEach((value, index) => {
       const symbol = document.createElement("span");
-      symbol.className = `optotype ${state.chartType === "symbols" ? "symbol-optotype" : ""}`;
-      symbol.textContent = value;
+      symbol.className = optotypeClassName("optotype", value);
+      fillOptotype(symbol, value);
       symbol.style.setProperty("--glyph-size-px", `${glyphFontSizePx(value, pxForMm(sizeMm))}px`);
-      if (state.chartType === "tumblingE" || state.chartType === "landoltC") symbol.style.transform = `rotate(${[0, 90, 180, 270][(rowIndex + index * 3 + state.seed) % 4]}deg)`;
+      if (state.chartType === "tumblingE") symbol.style.setProperty("--optotype-rotation", `${rotationForOptotype(rowIndex, index)}deg`);
       optotypes.appendChild(symbol);
     });
     const metric = document.createElement("div"); metric.className = "metric-label"; metric.textContent = state.showLabels ? `${sizeMm.toFixed(2)} mm${state.pixelsPerMm ? "" : " teóricos"}` : "";
@@ -184,10 +214,10 @@ function renderPresentation() {
   optotypes.className = "presentation-optotypes";
   buildSequence(row, state.presentationSlide).forEach((value, index) => {
     const symbol = document.createElement("span");
-    symbol.className = `presentation-optotype ${state.chartType === "symbols" ? "symbol-optotype" : ""}`;
-    symbol.textContent = value;
+    symbol.className = optotypeClassName("presentation-optotype", value);
+    fillOptotype(symbol, value);
     symbol.style.setProperty("--glyph-size-px", `${glyphFontSizePx(value, pxForMm(sizeMm))}px`);
-    if (state.chartType === "tumblingE" || state.chartType === "landoltC") symbol.style.transform = `rotate(${[0, 90, 180, 270][(state.presentationSlide + index * 3 + state.seed) % 4]}deg)`;
+    if (state.chartType === "tumblingE") symbol.style.setProperty("--optotype-rotation", `${rotationForOptotype(state.presentationSlide, index)}deg`);
     optotypes.appendChild(symbol);
   });
   slide.appendChild(optotypes);
@@ -223,7 +253,7 @@ function renderCalibration() {
 }
 
 function renderHeader() {
-  const names = { letters: "Letras Sloan", symbols: "Símbolos", tumblingE: "E direcional", landoltC: "C de Landolt" };
+  const names = { letters: "Letras Sloan", symbols: "Símbolos", tumblingE: "E direcional", numbers: "Numeros" };
   elements.distanceTitle.textContent = `${state.distanceMeters} metros`;
   elements.chartDistance.textContent = `${state.protocol.toUpperCase()} · teste a ${state.distanceMeters} m`;
   elements.chartName.textContent = names[state.chartType]; elements.contrastValue.textContent = `${state.contrast}%`;
