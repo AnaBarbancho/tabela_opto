@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sistema de Optotipos Snellen — Tabela para exame de acuidade visual</title>
+    <meta
+      name="description"
+      content="Aplicativo Windows para apresentação de optótipos Snellen e ETDRS/logMAR, com calibração física do monitor e registro de sessão."
+    />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #0b0d10;
+        --bg-panel: #14171b;
+        --text: #f2f3f4;
+        --text-muted: #9aa2ab;
+        --accent: #4fd1c5;
+        --border: #262b31;
+      }
+      @media (prefers-color-scheme: light) {
+        :root {
+          --bg: #f7f8f9;
+          --bg-panel: #ffffff;
+          --text: #14171b;
+          --text-muted: #55606a;
+          --border: #e3e6e8;
+        }
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.5;
+      }
+      .wrap { max-width: 880px; margin: 0 auto; padding: 0 24px; }
+      header.hero { padding: 72px 0 48px; text-align: center; }
+      .eyebrow {
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-size: 12px;
+        color: var(--accent);
+        font-weight: 600;
+        margin: 0 0 12px;
+      }
+      h1 { font-size: clamp(28px, 4vw, 42px); margin: 0 0 16px; }
+      .subtitle { color: var(--text-muted); font-size: 17px; max-width: 620px; margin: 0 auto 32px; }
+      .cta-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 14px 28px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 15px;
+        text-decoration: none;
+        border: 1px solid transparent;
+      }
+      .btn-primary { background: var(--accent); color: #04211e; }
+      .btn-secondary { background: transparent; color: var(--text); border-color: var(--border); }
+      section.features {
+        padding: 32px 0 64px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 16px;
+      }
+      .feature {
+        background: var(--bg-panel);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px;
+      }
+      .feature h3 { margin: 0 0 8px; font-size: 15px; }
+      .feature p { margin: 0; color: var(--text-muted); font-size: 14px; }
+      section.pricing { padding: 24px 0 72px; text-align: center; }
+      .price-card {
+        background: var(--bg-panel);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 40px;
+        max-width: 420px;
+        margin: 0 auto;
+      }
+      .price { font-size: 40px; font-weight: 700; margin: 8px 0 4px; }
+      .price small { font-size: 15px; font-weight: 400; color: var(--text-muted); }
+      .price-note { color: var(--text-muted); font-size: 13px; margin-bottom: 24px; }
+      ul.check-list { list-style: none; padding: 0; margin: 0 0 28px; text-align: left; }
+      ul.check-list li {
+        padding: 8px 0;
+        border-bottom: 1px solid var(--border);
+        font-size: 14px;
+        color: var(--text-muted);
+      }
+      ul.check-list li:last-child { border-bottom: none; }
+      footer {
+        border-top: 1px solid var(--border);
+        padding: 24px 0;
+        text-align: center;
+        color: var(--text-muted);
+        font-size: 13px;
+      }
+      .disclaimer {
+        max-width: 640px;
+        margin: 0 auto 48px;
+        font-size: 12px;
+        color: var(--text-muted);
+        text-align: center;
+        opacity: 0.85;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="hero">
+        <p class="eyebrow">Windows • Instalação local</p>
+        <h1>Sistema de Optótipos Snellen</h1>
+        <p class="subtitle">
+          Tabela de Snellen e ETDRS/logMAR com cálculo angular preciso, calibração física do
+          monitor e registro de sessão exportável — pronto para exame de acuidade visual.
+        </p>
+        <div class="cta-row">
+          <!-- Troque o href abaixo pelo link real do seu checkout (Mercado Pago, Stripe, PagSeguro etc.) -->
+          <a class="btn btn-primary" href="#" id="buyButton">Comprar licença</a>
+          <a class="btn btn-secondary" href="#recursos">Ver recursos</a>
+        </div>
+      </header>
+
+      <section class="features" id="recursos">
+        <div class="feature">
+          <h3>Distância configurável</h3>
+          <p>De 1 a 20 metros, com atalhos rápidos para 3 m e 6 m.</p>
+        </div>
+        <div class="feature">
+          <h3>Protocolos Snellen e ETDRS</h3>
+          <p>Letras, símbolos infantis, E direcional e C de Landolt.</p>
+        </div>
+        <div class="feature">
+          <h3>Calibração por régua</h3>
+          <p>Converte medida angular em pixels físicos reais da tela usada no exame.</p>
+        </div>
+        <div class="feature">
+          <h3>Sequência balanceada ou aleatória</h3>
+          <p>Modo de linha única para apresentação controlada.</p>
+        </div>
+        <div class="feature">
+          <h3>Tela cheia e teclado</h3>
+          <p>Navegação rápida durante o exame, sem depender do mouse.</p>
+        </div>
+        <div class="feature">
+          <h3>Registro e exportação CSV</h3>
+          <p>Sessões salvas localmente, exportáveis a qualquer momento.</p>
+        </div>
+      </section>
+
+      <section class="pricing">
+        <div class="price-card">
+          <p class="eyebrow">Licença única</p>
+          <p class="price">R$ 000<small>,00</small></p>
+          <p class="price-note">Pagamento único · vinculada a 1 computador</p>
+          <ul class="check-list">
+            <li>Instalador para Windows (.exe)</li>
+            <li>Ativação vinculada ao seu computador</li>
+            <li>Atualizações da versão adquirida</li>
+          </ul>
+          <a class="btn btn-primary" href="#" id="buyButton2" style="width: 100%; justify-content: center;">Comprar agora</a>
+        </div>
+      </section>
+
+      <p class="disclaimer">
+        Este software implementa o cálculo geométrico e controles operacionais do exame, mas não
+        constitui, por si só, um dispositivo médico validado. A responsabilidade técnica pelo uso
+        clínico é de quem realiza o exame.
+      </p>
+    </div>
+
+    <footer>
+      <div class="wrap">© <span id="year"></span> Sistema de Optótipos Snellen</div>
+    </footer>
+
+    <script>
+      document.getElementById("year").textContent = new Date().getFullYear();
+
+      // TODO: troque "#" pelo link real do seu checkout (Mercado Pago, Stripe, PagSeguro, etc.)
+      const CHECKOUT_URL = "";
+      const buyButtons = [document.getElementById("buyButton"), document.getElementById("buyButton2")];
+      buyButtons.forEach((btn) => {
+        if (CHECKOUT_URL) btn.href = CHECKOUT_URL;
+      });
+    </script>
+  </body>
+</html>
