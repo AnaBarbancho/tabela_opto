@@ -56,7 +56,13 @@
 
         <section class="panel-section">
           <h2>Calibração do monitor</h2>
-          <p class="help-text">Meça toda a barra preta visível abaixo com uma régua e informe o valor real. Ela não tem uma medida-padrão: use exatamente o que a régua mostrar. A calibração fica salva somente neste navegador.</p>
+          <p class="help-text">Use uma régua ou um cartão bancário padrão para ajustar o tamanho físico nesta tela. A calibração fica salva somente neste computador.</p>
+          <div class="calibration-method">
+            <span>Cartão padrão 85,60 mm</span>
+            <p class="help-text">Abra o calibrador em tela ampla, encoste um cartão real na tela e ajuste até as bordas coincidirem.</p>
+            <button id="openCardCalibration" class="tool-button full" type="button">Abrir calibrador com cartão</button>
+          </div>
+          <p class="help-text ruler-title">Ou calibre medindo a barra com régua:</p>
           <div class="calibration-ruler" aria-label="Barra para calibração"><span id="calibrationBar"></span></div>
           <label class="field">
             <span>Comprimento total da barra preta (mm)</span>
@@ -159,6 +165,34 @@
         </section>
       </section>
     </main>
+
+    <section class="card-calibration-modal" id="cardCalibrationModal" hidden aria-label="Calibrador com cartão">
+      <div class="card-calibration-panel">
+        <div class="modal-header">
+          <div>
+            <p class="eyebrow">Calibração física</p>
+            <h2>Calibrar com cartão</h2>
+          </div>
+          <button id="closeCardCalibration" class="icon-button" type="button" title="Fechar">Fechar</button>
+        </div>
+        <p class="help-text">Use um cartão bancário, CNH nova ou outro cartão padrão ID-1. Ajuste a largura abaixo até o cartão físico cobrir exatamente o retângulo.</p>
+        <div class="card-stage">
+          <div class="credit-card-calibrator large" id="cardCalibration" aria-label="Referência de largura de cartão">
+            <span class="card-chip" aria-hidden="true"></span>
+            <span class="card-line" aria-hidden="true"></span>
+          </div>
+        </div>
+        <label class="range-field">
+          <span>Largura do cartão na tela</span>
+          <input id="cardCalibrationWidth" type="range" min="220" max="760" value="324">
+          <output id="cardCalibrationWidthValue">324 px</output>
+        </label>
+        <div class="button-grid">
+          <button id="saveCardCalibration" class="tool-button" type="button">Salvar calibração</button>
+          <button id="cancelCardCalibration" class="tool-button" type="button">Cancelar</button>
+        </div>
+      </div>
+    </section>
 
     <script src="license-check.js"></script>
   </body>

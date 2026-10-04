@@ -5,7 +5,7 @@
 // so muda se o Windows for reinstalado). Outros SOs: gera um UUID e persiste
 // em um arquivo na pasta de dados do app.
 #[tauri::command]
-fn get_hardware_id(app_handle: tauri::AppHandle) -> Result<String, String> {
+fn get_hardware_id(_app_handle: tauri::AppHandle) -> Result<String, String> {
     #[cfg(target_os = "windows")]
     {
         use winreg::enums::HKEY_LOCAL_MACHINE;
@@ -24,7 +24,7 @@ fn get_hardware_id(app_handle: tauri::AppHandle) -> Result<String, String> {
         use std::fs;
         use tauri::Manager;
 
-        let dir = app_handle
+        let dir = _app_handle
             .path()
             .app_data_dir()
             .map_err(|e| e.to_string())?;

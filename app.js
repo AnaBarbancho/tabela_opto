@@ -2,6 +2,7 @@ const CALIBRATION_KEY = "optotipos.calibration.v2";
 const OPTOTYPE_CALIBRATION_KEY = "optotipos.glyph-scale.v1";
 const RESULTS_KEY = "optotipos.results.v1";
 const OPTOTYPE_FONT = '"Optician Sans Local", Arial, Helvetica, sans-serif';
+const CARD_CALIBRATION_WIDTH_MM = 85.6;
 const COLOR_PANEL_WIDTH_MM = 102;
 const COLOR_PANEL_HEIGHT_MM = 92;
 const COLOR_PANEL_ROWS = [
@@ -39,7 +40,7 @@ const state = {
 };
 
 const elements = Object.fromEntries([
-  "appShell", "controlPanel", "protocol", "customDistance", "chartType", "sequenceMode", "contrast", "contrastValue", "showLabels", "colorPanels", "singleLine", "linePicker", "shuffle", "printChart", "toggleMenu", "fullscreen", "reset", "chart", "chartPaper", "presentationStage", "sizeTable", "distanceTitle", "chartDistance", "chartName", "calibrationText", "calibrationCard", "calibrationBar", "measuredBarMm", "saveCalibration", "clearCalibration", "measuredOptotypeMm", "saveOptotypeCalibration", "calibrationStatus", "patientId", "eye", "correction", "resultLine", "errors", "saveResult", "exportResults", "sessionStatus",
+  "appShell", "controlPanel", "protocol", "customDistance", "chartType", "sequenceMode", "contrast", "contrastValue", "showLabels", "colorPanels", "singleLine", "linePicker", "shuffle", "printChart", "toggleMenu", "fullscreen", "reset", "chart", "chartPaper", "presentationStage", "sizeTable", "distanceTitle", "chartDistance", "chartName", "calibrationText", "calibrationCard", "calibrationBar", "openCardCalibration", "cardCalibrationModal", "closeCardCalibration", "cancelCardCalibration", "cardCalibration", "cardCalibrationWidth", "cardCalibrationWidthValue", "saveCardCalibration", "measuredBarMm", "saveCalibration", "clearCalibration", "measuredOptotypeMm", "saveOptotypeCalibration", "calibrationStatus", "patientId", "eye", "correction", "resultLine", "errors", "saveResult", "exportResults", "sessionStatus",
 ].map((id) => [id, document.querySelector(`#${id}`)]));
 elements.distanceButtons = document.querySelectorAll("[data-distance]");
 elements.linePickerField = document.querySelector(".line-picker");
@@ -238,6 +239,9 @@ function renderCalibration() {
   // The bar must remain fully visible in narrow side panels. Its rendered width,
   // not an assumed CSS width, is used in the calibration calculation.
   elements.calibrationBar.style.width = "min(320px, 100%)";
+  const cardWidth = Number(elements.cardCalibrationWidth.value || 324);
+  elements.cardCalibration.style.width = `${cardWidth}px`;
+  elements.cardCalibrationWidthValue.textContent = `${Math.round(cardWidth)} px`;
   const barPixels = elements.calibrationBar.getBoundingClientRect().width;
   const target = optotypeHeightMm(state.distanceMeters, 20);
   if (state.pixelsPerMm) {
@@ -269,7 +273,35 @@ function saveCalibration() {
   const barPixels = elements.calibrationBar.getBoundingClientRect().width;
   if (!Number.isFinite(barPixels) || barPixels < 10) { elements.calibrationStatus.textContent = "Não foi possível ler a barra de calibração. Atualize a página e tente novamente."; return; }
   state.pixelsPerMm = barPixels / measured;
-  localStorage.setItem(CALIBRATION_KEY, JSON.stringify({ pixelsPerMm: state.pixelsPerMm, calibratedAt: new Date().toISOString(), barPixels, measuredMm: measured })); renderAll();
+  localStorage.setItem(CALIBRATION_KEY, JSON.stringify({ method: "ruler", pixelsPerMm: state.pixelsPerMm, calibratedAt: new Date().toISOString(), barPixels, measuredMm: measured })); renderAll();
+}
+
+function saveCardCalibration() {
+  const cardPixels = elements.cardCalibration.getBoundingClientRect().width;
+  if (!Number.isFinite(cardPixels) || cardPixels < 120) {
+    elements.calibrationStatus.textContent = "Não foi possível ler a largura do cartão. Ajuste o controle e tente novamente.";
+    return;
+  }
+  state.pixelsPerMm = cardPixels / CARD_CALIBRATION_WIDTH_MM;
+  localStorage.setItem(CALIBRATION_KEY, JSON.stringify({
+    method: "card",
+    pixelsPerMm: state.pixelsPerMm,
+    calibratedAt: new Date().toISOString(),
+    cardPixels,
+    referenceMm: CARD_CALIBRATION_WIDTH_MM,
+  }));
+  elements.calibrationStatus.textContent = `Calibrado pelo cartão: ${state.pixelsPerMm.toFixed(3)} px/mm.`;
+  closeCardCalibration();
+  renderAll();
+}
+
+function openCardCalibration() {
+  elements.cardCalibrationModal.hidden = false;
+  renderCalibration();
+}
+
+function closeCardCalibration() {
+  elements.cardCalibrationModal.hidden = true;
 }
 
 function saveOptotypeCalibration() {
@@ -322,6 +354,12 @@ function bindEvents() {
     renderAll();
   });
   elements.shuffle.addEventListener("click", () => { state.seed = Date.now(); renderAll(); }); elements.printChart.addEventListener("click", () => window.print());
+  elements.openCardCalibration.addEventListener("click", openCardCalibration);
+  elements.closeCardCalibration.addEventListener("click", closeCardCalibration);
+  elements.cancelCardCalibration.addEventListener("click", closeCardCalibration);
+  elements.cardCalibrationModal.addEventListener("click", (event) => { if (event.target === elements.cardCalibrationModal) closeCardCalibration(); });
+  elements.cardCalibrationWidth.addEventListener("input", renderCalibration);
+  elements.saveCardCalibration.addEventListener("click", saveCardCalibration);
   elements.saveCalibration.addEventListener("click", saveCalibration); elements.clearCalibration.addEventListener("click", () => { state.pixelsPerMm = null; localStorage.removeItem(CALIBRATION_KEY); elements.measuredBarMm.value = ""; renderAll(); });
   elements.saveOptotypeCalibration.addEventListener("click", saveOptotypeCalibration);
   elements.saveResult.addEventListener("click", saveResult); elements.exportResults.addEventListener("click", exportResults);
