@@ -15,14 +15,7 @@
         </div>
 
         <section class="panel-section">
-          <h2>Protocolo</h2>
-          <label class="field">
-            <span>Tabela</span>
-            <select id="protocol">
-              <option value="snellen">Snellen</option>
-            </select>
-          </label>
-          <h2 class="subheading">Distância</h2>
+          <h2>Distância</h2>
           <div class="segmented" role="group" aria-label="Distancia de teste">
             <button class="segment is-active" type="button" data-distance="6">6 metros</button>
             <button class="segment" type="button" data-distance="3">3 metros</button>
@@ -72,11 +65,6 @@
             <button id="saveCalibration" class="tool-button" type="button">Salvar calibração</button>
             <button id="clearCalibration" class="tool-button" type="button">Limpar</button>
           </div>
-          <label class="field">
-            <span>Altura preta medida da letra 20/200 (mm)</span>
-            <input id="measuredOptotypeMm" type="number" min="10" max="300" step="0.1" placeholder="Meça a altura visível">
-          </label>
-          <button id="saveOptotypeCalibration" class="tool-button full" type="button">Corrigir tamanho da fonte</button>
           <p id="calibrationStatus" class="status-message" role="status"></p>
         </section>
 
@@ -105,20 +93,8 @@
           <h2>Ferramentas</h2>
           <div class="button-grid">
             <button id="shuffle" class="tool-button" type="button">Embaralhar</button>
-            <button id="printChart" class="tool-button" type="button">Imprimir</button>
           </div>
           <button id="reset" class="tool-button full" type="button">Restaurar padrao</button>
-        </section>
-
-        <section class="panel-section">
-          <h2>Sessão de exame</h2>
-          <label class="field"><span>Identificador do paciente</span><input id="patientId" maxlength="40" placeholder="Código ou iniciais"></label>
-          <label class="field"><span>Olho</span><select id="eye"><option value="OD">OD</option><option value="OE">OE</option><option value="AO">AO</option></select></label>
-          <label class="field"><span>Correção</span><select id="correction"><option>Sem correção</option><option>Com correção</option><option>Estenopeico</option></select></label>
-          <label class="field"><span>Resultado</span><select id="resultLine"></select></label>
-          <label class="field"><span>Erros na linha</span><input id="errors" type="number" min="0" max="20" value="0"></label>
-          <div class="button-grid"><button id="saveResult" class="tool-button" type="button">Registrar</button><button id="exportResults" class="tool-button" type="button">Exportar CSV</button></div>
-          <p id="sessionStatus" class="status-message" role="status"></p>
         </section>
 
         <p class="note">A calibração confirma somente o tamanho físico nesta tela. Antes de uso assistencial, valide optótipos, luminância, contraste, protocolo e registro conforme a sua responsabilidade técnica e normas aplicáveis.</p>

@@ -640,7 +640,7 @@ input {
   overflow: hidden;
   border: 1px solid rgba(217, 224, 231, 0.95);
   border-radius: 10px;
-  background: #fff;
+  background: linear-gradient(180deg, #fbfdff 0%, #f1f6f8 100%);
   box-shadow: 0 10px 26px rgba(31, 45, 61, 0.08);
   cursor: pointer;
   transition: transform 160ms ease, box-shadow 160ms ease;
@@ -673,6 +673,9 @@ input {
 .chart-card .optotypes {
   flex: 1;
   padding: 18px;
+  gap: var(--preview-gap-px, var(--gap-px));
+  min-height: 0;
+  background: rgba(255, 255, 255, 0.58);
 }
 
 .chart-card.intro-card .optotypes {
@@ -902,12 +905,22 @@ input {
   font-family: var(--optotype-font);
 }
 
+.chart-card .optotype {
+  width: var(--preview-size-px, var(--size-px));
+  height: var(--preview-size-px, var(--size-px));
+  font-size: var(--preview-glyph-size-px, var(--glyph-size-px, var(--size-px)));
+}
+
 .directional-optotype {
   flex: 0 0 var(--size-px);
   overflow: visible;
   transform: rotate(var(--optotype-rotation, 0deg));
   transform-origin: center center;
   text-align: center;
+}
+
+.chart-card .directional-optotype {
+  flex: 0 0 var(--preview-size-px, var(--size-px));
 }
 
 .tumbling-e-optotype {

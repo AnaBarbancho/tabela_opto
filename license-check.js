@@ -30,7 +30,7 @@
     return id;
   }
 
-  async function validateLicense(licenseKey) {
+  async function callLicenseServer(licenseKey, action = "validate") {
     const hardwareId = await getHardwareId();
 
     try {
@@ -41,13 +41,21 @@
           apikey: SUPABASE_ANON_KEY,
           authorization: `Bearer ${SUPABASE_ANON_KEY}`,
         },
-        body: JSON.stringify({ license_key: licenseKey, hardware_id: hardwareId }),
+        body: JSON.stringify({ license_key: licenseKey, hardware_id: hardwareId, action }),
       });
       const data = await res.json().catch(() => ({}));
-      return { ok: res.ok && data.valid, error: data.error, online: true };
+      return { ok: res.ok && data.valid, error: data.error, online: true, data };
     } catch (_) {
       return { ok: false, error: "network_error", online: false };
     }
+  }
+
+  function validateLicense(licenseKey) {
+    return callLicenseServer(licenseKey, "validate");
+  }
+
+  function deactivateLicense(licenseKey) {
+    return callLicenseServer(licenseKey, "deactivate");
   }
 
   function saveValidLicense(licenseKey) {
@@ -108,6 +116,8 @@
         return "Esta licenca foi bloqueada.";
       case "already_activated_elsewhere":
         return "Esta licenca ja esta ativa em outro computador.";
+      case "not_active_on_this_computer":
+        return "Esta licenca nao esta ativa neste computador.";
       case "network_error":
         return "Sem conexao com o servidor. A primeira ativacao precisa de internet.";
       case "offline_expired":
@@ -121,6 +131,49 @@
     const script = document.createElement("script");
     script.src = "app.js";
     document.body.appendChild(script);
+    showLicenseControls();
+  }
+
+  function showLicenseControls() {
+    if (document.getElementById("licenseControls")) return;
+
+    const controls = document.createElement("div");
+    controls.id = "licenseControls";
+    controls.style.cssText =
+      "position:fixed;right:16px;bottom:16px;z-index:9999;display:flex;gap:8px;align-items:center;font-family:system-ui,sans-serif;";
+    controls.innerHTML = `
+      <button id="deactivateLicense" type="button" title="Liberar esta chave para outro computador" style="border:1px solid rgba(12,16,20,.18);background:#fff;color:#1f2933;border-radius:8px;padding:9px 12px;font-size:12px;box-shadow:0 8px 24px rgba(15,23,42,.14);cursor:pointer;">Desativar licenca</button>
+    `;
+    document.body.appendChild(controls);
+
+    document.getElementById("deactivateLicense").addEventListener("click", async () => {
+      const savedKey = localStorage.getItem(STORAGE_KEY);
+      if (!savedKey) {
+        clearLicense();
+        location.reload();
+        return;
+      }
+
+      const confirmed = confirm(
+        "Desativar esta licenca neste computador?\n\nDepois disso, esta chave podera ser ativada em outro computador e este app voltara para a tela de ativacao."
+      );
+      if (!confirmed) return;
+
+      const button = document.getElementById("deactivateLicense");
+      button.disabled = true;
+      button.textContent = "Desativando...";
+
+      const { ok, error } = await deactivateLicense(savedKey);
+      if (ok) {
+        clearLicense();
+        alert("Licenca desativada. Agora ela pode ser usada em outro computador.");
+        location.reload();
+      } else {
+        button.disabled = false;
+        button.textContent = "Desativar licenca";
+        alert(errorMessage(error));
+      }
+    });
   }
 
   async function boot() {

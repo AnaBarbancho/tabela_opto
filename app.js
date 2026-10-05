@@ -1,6 +1,5 @@
 const CALIBRATION_KEY = "optotipos.calibration.v2";
 const OPTOTYPE_CALIBRATION_KEY = "optotipos.glyph-scale.v1";
-const RESULTS_KEY = "optotipos.results.v1";
 const OPTOTYPE_FONT = '"Optician Sans Local", Arial, Helvetica, sans-serif';
 const CARD_CALIBRATION_WIDTH_MM = 85.6;
 const COLOR_PANEL_WIDTH_MM = 102;
@@ -40,7 +39,7 @@ const state = {
 };
 
 const elements = Object.fromEntries([
-  "appShell", "controlPanel", "protocol", "customDistance", "chartType", "sequenceMode", "contrast", "contrastValue", "showLabels", "colorPanels", "singleLine", "linePicker", "shuffle", "printChart", "toggleMenu", "fullscreen", "reset", "chart", "chartPaper", "presentationStage", "sizeTable", "distanceTitle", "chartDistance", "chartName", "calibrationText", "calibrationCard", "calibrationBar", "openCardCalibration", "cardCalibrationModal", "closeCardCalibration", "cancelCardCalibration", "cardCalibration", "cardCalibrationWidth", "cardCalibrationWidthValue", "saveCardCalibration", "measuredBarMm", "saveCalibration", "clearCalibration", "measuredOptotypeMm", "saveOptotypeCalibration", "calibrationStatus", "patientId", "eye", "correction", "resultLine", "errors", "saveResult", "exportResults", "sessionStatus",
+  "appShell", "controlPanel", "customDistance", "chartType", "sequenceMode", "contrast", "contrastValue", "showLabels", "colorPanels", "singleLine", "linePicker", "shuffle", "toggleMenu", "fullscreen", "reset", "chart", "chartPaper", "presentationStage", "sizeTable", "distanceTitle", "chartDistance", "chartName", "calibrationText", "calibrationCard", "calibrationBar", "openCardCalibration", "cardCalibrationModal", "closeCardCalibration", "cancelCardCalibration", "cardCalibration", "cardCalibrationWidth", "cardCalibrationWidthValue", "saveCardCalibration", "measuredBarMm", "saveCalibration", "clearCalibration", "calibrationStatus",
 ].map((id) => [id, document.querySelector(`#${id}`)]));
 elements.distanceButtons = document.querySelectorAll("[data-distance]");
 elements.linePickerField = document.querySelector(".line-picker");
@@ -60,16 +59,35 @@ function lineName(row) {
 
 function mulberry32(seed) { return () => { let value = seed += 0x6d2b79f5; value = Math.imul(value ^ (value >>> 15), value | 1); value ^= value + Math.imul(value ^ (value >>> 7), value | 61); return ((value ^ (value >>> 14)) >>> 0) / 4294967296; }; }
 
+function shuffledSequence(source, count, random) {
+  const pool = [...source];
+  for (let index = pool.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(random() * (index + 1));
+    [pool[index], pool[swapIndex]] = [pool[swapIndex], pool[index]];
+  }
+  return Array.from({ length: count }, (_, index) => pool[index % pool.length]);
+}
+
 function buildSequence(row, rowIndex) {
   if (state.protocol === "snellen" && state.chartType === "letters" && state.sequenceMode === "fixed") return row.fixed.split("");
   const source = sets[state.chartType];
   const random = mulberry32(state.seed + rowIndex * 97 + Math.round(row.denominator));
+  if (state.chartType === "numbers" || state.chartType === "symbols") {
+    return shuffledSequence(source, row.count, random);
+  }
   const offset = state.sequenceMode === "balanced" ? rowIndex : Math.floor(random() * source.length);
   return Array.from({ length: row.count }, (_, index) => state.sequenceMode === "random" ? source[Math.floor(random() * source.length)] : source[(offset + index * 3) % source.length]);
 }
 
 function rotationForOptotype(rowIndex, index) {
-  return [0, 90, 180, 270][(rowIndex + index + state.seed) % 4];
+  const directions = [0, 90, 180, 270];
+  const random = mulberry32(state.seed + rowIndex * 131 + index * 17);
+  let rotation = directions[Math.floor(random() * directions.length)];
+  if (index > 0) {
+    const previous = rotationForOptotype(rowIndex, index - 1);
+    while (rotation === previous) rotation = directions[Math.floor(random() * directions.length)];
+  }
+  return rotation;
 }
 
 function shouldDrawGeometricE(value) {
@@ -114,6 +132,13 @@ function glyphFontSizePx(value, targetInkHeightPx) {
   const inkHeight = (metrics.actualBoundingBoxAscent || 0) + (metrics.actualBoundingBoxDescent || 0);
   if (!inkHeight) return targetInkHeightPx * 1.36 * state.glyphScale;
   return targetInkHeightPx * (sampleSize / inkHeight) * state.glyphScale;
+}
+
+function previewScaleForRow(row, sizePx, gapPx) {
+  const maxPreviewWidthPx = 300;
+  const maxPreviewHeightPx = 245;
+  const totalWidthPx = row.count * sizePx + Math.max(row.count - 1, 0) * gapPx;
+  return Math.min(1, maxPreviewWidthPx / totalWidthPx, maxPreviewHeightPx / sizePx);
 }
 
 function createColorPanelPair(className) {
@@ -164,17 +189,24 @@ function renderChart() {
     rowElement.classList.toggle("is-selected", rowIndex === state.selectedLine);
     rowElement.classList.toggle("is-presentation-slide", rowIndex === state.presentationSlide);
     rowElement.style.setProperty("--size-mm", `${sizeMm}mm`);
-    rowElement.style.setProperty("--size-px", `${pxForMm(sizeMm)}px`);
+    const sizePx = pxForMm(sizeMm);
+    rowElement.style.setProperty("--size-px", `${sizePx}px`);
     const spacingMm = row.denominator === 100 ? 34 : 17;
     rowElement.style.setProperty("--gap-mm", `${spacingMm}mm`);
-    rowElement.style.setProperty("--gap-px", `${pxForMm(spacingMm)}px`);
+    const gapPx = pxForMm(spacingMm);
+    rowElement.style.setProperty("--gap-px", `${gapPx}px`);
+    const previewScale = previewScaleForRow(row, sizePx, gapPx);
+    rowElement.style.setProperty("--preview-size-px", `${sizePx * previewScale}px`);
+    rowElement.style.setProperty("--preview-gap-px", `${gapPx * previewScale}px`);
     const acuity = document.createElement("div"); acuity.className = "acuity-label"; acuity.textContent = state.showLabels ? lineName(row) : "";
     const optotypes = document.createElement("div"); optotypes.className = "optotypes";
     buildSequence(row, rowIndex).forEach((value, index) => {
       const symbol = document.createElement("span");
       symbol.className = optotypeClassName("optotype", value);
       fillOptotype(symbol, value);
-      symbol.style.setProperty("--glyph-size-px", `${glyphFontSizePx(value, pxForMm(sizeMm))}px`);
+      const glyphSizePx = glyphFontSizePx(value, sizePx);
+      symbol.style.setProperty("--glyph-size-px", `${glyphSizePx}px`);
+      symbol.style.setProperty("--preview-glyph-size-px", `${glyphSizePx * previewScale}px`);
       if (state.chartType === "tumblingE") symbol.style.setProperty("--optotype-rotation", `${rotationForOptotype(rowIndex, index)}deg`);
       optotypes.appendChild(symbol);
     });
@@ -231,8 +263,10 @@ function renderReference() {
 }
 
 function renderPickers() {
-  [elements.linePicker, elements.resultLine].forEach((picker) => { picker.innerHTML = ""; rows().forEach((row, index) => { const option = document.createElement("option"); option.value = String(index); option.textContent = lineName(row); picker.appendChild(option); }); });
-  elements.linePicker.value = String(state.selectedLine); elements.resultLine.value = String(state.selectedLine); elements.linePickerField.hidden = !state.singleLine;
+  elements.linePicker.innerHTML = "";
+  rows().forEach((row, index) => { const option = document.createElement("option"); option.value = String(index); option.textContent = lineName(row); elements.linePicker.appendChild(option); });
+  elements.linePicker.value = String(state.selectedLine);
+  elements.linePickerField.hidden = !state.singleLine;
 }
 
 function renderCalibration() {
@@ -304,35 +338,10 @@ function closeCardCalibration() {
   elements.cardCalibrationModal.hidden = true;
 }
 
-function saveOptotypeCalibration() {
-  const measured = Number(elements.measuredOptotypeMm.value);
-  const target = optotypeHeightMm(state.distanceMeters, 200);
-  if (!state.pixelsPerMm) { elements.calibrationStatus.textContent = "Primeiro salve a calibração do monitor pela barra preta."; return; }
-  if (!Number.isFinite(measured) || measured < 10 || measured > 300) { elements.calibrationStatus.textContent = "Informe a altura preta que você mediu na letra 20/200."; return; }
-  state.glyphScale *= target / measured;
-  localStorage.setItem(OPTOTYPE_CALIBRATION_KEY, JSON.stringify({ glyphScale: state.glyphScale, calibratedAt: new Date().toISOString(), targetMm: target, measuredMm: measured }));
-  elements.calibrationStatus.textContent = `Fonte corrigida: 20/200 ajustada para ${target.toFixed(2)} mm.`;
-  renderAll();
-}
-
-function csvCell(value) { return `"${String(value ?? "").replaceAll('"', '""')}"`; }
-function saveResult() {
-  if (!state.pixelsPerMm) { elements.sessionStatus.textContent = "Calibre o monitor antes de registrar o resultado."; return; }
-  const selected = rows()[Number(elements.resultLine.value)];
-  const record = { timestamp: new Date().toISOString(), patientId: elements.patientId.value.trim(), eye: elements.eye.value, correction: elements.correction.value, protocol: state.protocol, distanceMeters: state.distanceMeters, result: lineName(selected), errors: Number(elements.errors.value), calibratedPixelsPerMm: state.pixelsPerMm };
-  const records = JSON.parse(localStorage.getItem(RESULTS_KEY) || "[]"); records.push(record); localStorage.setItem(RESULTS_KEY, JSON.stringify(records)); elements.sessionStatus.textContent = `Resultado registrado localmente às ${new Date().toLocaleTimeString("pt-BR")}.`;
-}
-function exportResults() {
-  const records = JSON.parse(localStorage.getItem(RESULTS_KEY) || "[]");
-  if (!records.length) { elements.sessionStatus.textContent = "Não há resultados locais para exportar."; return; }
-  const keys = Object.keys(records[0]); const csv = [keys.join(","), ...records.map((record) => keys.map((key) => csvCell(record[key])).join(","))].join("\r\n");
-  const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" })); link.download = `resultados-optotipos-${new Date().toISOString().slice(0, 10)}.csv`; link.click(); URL.revokeObjectURL(link.href);
-}
-
 function bindEvents() {
   elements.distanceButtons.forEach((button) => button.addEventListener("click", () => { state.distanceMeters = Number(button.dataset.distance); elements.customDistance.value = state.distanceMeters; elements.distanceButtons.forEach((item) => item.classList.toggle("is-active", item === button)); renderAll(); }));
   elements.customDistance.addEventListener("change", () => { const value = Number(elements.customDistance.value); if (value >= 1 && value <= 20) { state.distanceMeters = value; elements.distanceButtons.forEach((item) => item.classList.toggle("is-active", Number(item.dataset.distance) === value)); renderAll(); } });
-  ["protocol", "chartType", "sequenceMode"].forEach((key) => elements[key].addEventListener("change", () => { state[key] = elements[key].value; state.selectedLine = Math.min(state.selectedLine, rows().length - 1); renderAll(); }));
+  ["chartType", "sequenceMode"].forEach((key) => elements[key].addEventListener("change", () => { state[key] = elements[key].value; state.selectedLine = Math.min(state.selectedLine, rows().length - 1); renderAll(); }));
   elements.contrast.addEventListener("input", () => { state.contrast = Number(elements.contrast.value); renderAll(); });
   elements.showLabels.addEventListener("change", () => { state.showLabels = elements.showLabels.checked; renderAll(); });
   elements.singleLine.addEventListener("change", () => { state.singleLine = elements.singleLine.checked; renderAll(); });
@@ -353,7 +362,7 @@ function bindEvents() {
     }
     renderAll();
   });
-  elements.shuffle.addEventListener("click", () => { state.seed = Date.now(); renderAll(); }); elements.printChart.addEventListener("click", () => window.print());
+  elements.shuffle.addEventListener("click", () => { state.seed = Date.now(); renderAll(); });
   elements.openCardCalibration.addEventListener("click", openCardCalibration);
   elements.closeCardCalibration.addEventListener("click", closeCardCalibration);
   elements.cancelCardCalibration.addEventListener("click", closeCardCalibration);
@@ -361,14 +370,12 @@ function bindEvents() {
   elements.cardCalibrationWidth.addEventListener("input", renderCalibration);
   elements.saveCardCalibration.addEventListener("click", saveCardCalibration);
   elements.saveCalibration.addEventListener("click", saveCalibration); elements.clearCalibration.addEventListener("click", () => { state.pixelsPerMm = null; localStorage.removeItem(CALIBRATION_KEY); elements.measuredBarMm.value = ""; renderAll(); });
-  elements.saveOptotypeCalibration.addEventListener("click", saveOptotypeCalibration);
-  elements.saveResult.addEventListener("click", saveResult); elements.exportResults.addEventListener("click", exportResults);
   elements.toggleMenu.addEventListener("click", () => { state.menuCollapsed = !state.menuCollapsed; renderAll(); });
   elements.fullscreen.addEventListener("click", async () => { try { if (isPresentationMode()) { state.fullscreenActive = false; elements.chartWorkspace.classList.remove("local-fullscreen"); if (document.fullscreenElement) await document.exitFullscreen(); } else if (elements.chartWorkspace.requestFullscreen) { state.fullscreenActive = true; state.presentationSlide = state.selectedLine; await elements.chartWorkspace.requestFullscreen(); } else { state.fullscreenActive = true; elements.chartWorkspace.classList.add("local-fullscreen"); } } catch { state.fullscreenActive = true; elements.chartWorkspace.classList.add("local-fullscreen"); } renderAll(); });
   document.addEventListener("fullscreenchange", () => { state.fullscreenActive = Boolean(document.fullscreenElement); if (!document.fullscreenElement) elements.chartWorkspace.classList.remove("local-fullscreen"); renderAll(); });
   elements.presentationStage.addEventListener("click", (event) => { if (!isPresentationMode()) return; const bounds = elements.presentationStage.getBoundingClientRect(); const direction = event.clientX < bounds.left + bounds.width / 2 ? -1 : 1; state.presentationSlide = (state.presentationSlide + direction + totalSlides()) % totalSlides(); renderAll(); });
   document.addEventListener("keydown", (event) => { if (!isPresentationMode()) return; if (["ArrowRight", "PageDown", " "].includes(event.key)) { event.preventDefault(); state.presentationSlide = (state.presentationSlide + 1) % totalSlides(); renderAll(); } if (["ArrowLeft", "PageUp"].includes(event.key)) { event.preventDefault(); state.presentationSlide = (state.presentationSlide - 1 + totalSlides()) % totalSlides(); renderAll(); } });
-  elements.reset.addEventListener("click", () => { Object.assign(state, { distanceMeters: 6, protocol: "snellen", chartType: "letters", sequenceMode: "fixed", contrast: 100, showLabels: true, singleLine: false, selectedLine: 6, presentationSlide: 6, seed: Date.now() }); elements.protocol.value = state.protocol; elements.chartType.value = state.chartType; elements.sequenceMode.value = state.sequenceMode; elements.contrast.value = 100; elements.showLabels.checked = true; elements.singleLine.checked = false; elements.customDistance.value = 6; renderAll(); });
+  elements.reset.addEventListener("click", () => { Object.assign(state, { distanceMeters: 6, protocol: "snellen", chartType: "letters", sequenceMode: "fixed", contrast: 100, showLabels: true, singleLine: false, selectedLine: 6, presentationSlide: 6, seed: Date.now() }); elements.chartType.value = state.chartType; elements.sequenceMode.value = state.sequenceMode; elements.contrast.value = 100; elements.showLabels.checked = true; elements.singleLine.checked = false; elements.customDistance.value = 6; renderAll(); });
 }
 
 try { const stored = JSON.parse(localStorage.getItem(CALIBRATION_KEY)); if (stored?.pixelsPerMm > 0) state.pixelsPerMm = stored.pixelsPerMm; } catch { localStorage.removeItem(CALIBRATION_KEY); }
